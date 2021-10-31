@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+docker-compose -f compose.yml -p vault pull
+
+# start a process to capture the unseal key & root token
+
+docker-compose -f compose.yml -p vault up

@@ -1,0 +1,29 @@
+#!/bin/sh
+
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+function is_local() {
+    if docker inspect vault > /dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+if is_local; then
+    source "${SCRIPT_DIR}/.env"
+
+    export VAULT_ADDR="http://localhost:8200"
+    export VAULT_TOKEN=$(docker logs vault 2>/dev/null | grep 'Root Token' | tail -n1 | sed 's/^.*: \(.*\)$/\1/')
+
+    export TF_VAR_okta_org_name="${OKTA_ORG_NAME}"
+    export TF_VAR_okta_base_url="${OKTA_BASE_URL}"
+    export OKTA_API_TOKEN=$(secret-tool lookup okta api_key)
+else
+    # authn to vault to get secerts
+    echo "not implemented"
+    exit 1
+fi
+
+[ ! -d '.terraform' ] && terraform init
+terraform $@

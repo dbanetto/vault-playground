@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+function check_requirements {
+    if type secret-tool > /dev/null ; then
+        echo 'Found secert-tool'
+    else
+        echo 'Did not find secert-tool'
+        exit 1 
+    fi
+}
+
+function setup_secert {
+    local name="$1"
+    
+    if 
+}
+
+# check requirements
+# secert-tool
+echo ":: Checking requirements"
+check_requirements
+echo
+
+echo ":: Setup secerts"
+
+echo
+# Check if already exists
+secret-tool seach okta api_key
