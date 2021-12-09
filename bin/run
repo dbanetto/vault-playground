@@ -3,8 +3,14 @@
 set -e
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
+COMPOSE_PID=""
+
 cleanup() {
-    $1 -f "${SCRIPT_DIR}/compose.yml" -p vault down
+    local COMPOSE
+    COMPOSE=$1
+
+    kill -9 "$COMPOSE_PID"
+    $COMPOSE -f "${SCRIPT_DIR}/compose.yml" -p vault down
 }
 
 main () {
@@ -21,7 +27,9 @@ main () {
         exit 1
     fi
 
-    $COMPOSE -f "${SCRIPT_DIR}/compose.yml" -p vault up --force-recreate &
+    $COMPOSE -f "${SCRIPT_DIR}/compose.yml" -p vault up --force-recreate --remove-orphans &
+    COMPOSE_PID=$!
+
     trap "cleanup $COMPOSE" EXIT
 
     # Would be better if this was event based
@@ -34,7 +42,7 @@ main () {
 
    VAULT_ADDR=http://127.0.0.1:8200 vault operator unseal "$UNSEAL"
 
-   %
+   wait "$COMPOSE_PID"
 }
 
 main "$@"
