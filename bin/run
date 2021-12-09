@@ -11,6 +11,7 @@ cleanup() {
 
     kill -9 "$COMPOSE_PID"
     $COMPOSE -f "${SCRIPT_DIR}/compose.yml" -p vault down
+    rm "${SCRIPT_DIR}/.vault.env"
 }
 
 main () {
@@ -35,8 +36,8 @@ main () {
     # Would be better if this was event based
     sleep 10
 
-    echo 'export VAULT_ADDR=http://127.0.0.1:8200' | tee -a "${SCRIPT_DIR}/.env" > /dev/null
-    $RUNNER logs vault-server 2>/dev/null | grep 'Root Token' | tail -n1 | sed 's/^.*: \(.*\)$/export VAULT_TOKEN=\1/' | tee -a "${SCRIPT_DIR}/.env" > /dev/null
+    echo 'export VAULT_ADDR=http://127.0.0.1:8200' | tee -a "${SCRIPT_DIR}/.vault.env" > /dev/null
+    $RUNNER logs vault-server 2>/dev/null | grep 'Root Token' | tail -n1 | sed 's/^.*: \(.*\)$/export VAULT_TOKEN=\1/' | tee -a "${SCRIPT_DIR}/.vault.env" > /dev/null
 
     UNSEAL=$($RUNNER logs vault-server 2>/dev/null | grep 'Unseal Key' | tail -n1 | sed 's/^.*: \(.*\)$/\1/')
 

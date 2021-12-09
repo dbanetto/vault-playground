@@ -14,6 +14,7 @@ function is_local() {
 
 if is_local; then
     source "${SCRIPT_DIR}/.env"
+    source "${SCRIPT_DIR}/.vault.env"
 
     export TF_VAR_okta_org_name="${OKTA_ORG_NAME}"
     export TF_VAR_okta_base_url="${OKTA_BASE_URL}"
