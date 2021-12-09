@@ -1,7 +1,40 @@
 #!/usr/bin/env bash
 
-docker-compose -f compose.yml -p vault pull
+set -e
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-# start a process to capture the unseal key & root token
+cleanup() {
+    $1 -f "${SCRIPT_DIR}/compose.yml" -p vault down
+}
 
-docker-compose -f compose.yml -p vault up
+main () {
+    local COMPOSE RUNNER UNSEAL
+
+    if command -v docker-compose &> /dev/null ; then
+        COMPOSE="docker-compose"
+        RUNNER="docker"
+    elif command -v podman-compose &> /dev/null ; then
+        COMPOSE="podman-compose"
+        RUNNER="podman"
+    else
+        echo "No runner installed"
+        exit 1
+    fi
+
+    $COMPOSE -f "${SCRIPT_DIR}/compose.yml" -p vault up --force-recreate &
+    trap "cleanup $COMPOSE" EXIT
+
+    # Would be better if this was event based
+    sleep 10
+
+    echo 'export VAULT_ADDR=http://127.0.0.1:8200' | tee -a "${SCRIPT_DIR}/.env" > /dev/null
+    $RUNNER logs vault-server 2>/dev/null | grep 'Root Token' | tail -n1 | sed 's/^.*: \(.*\)$/export VAULT_TOKEN=\1/' | tee -a "${SCRIPT_DIR}/.env" > /dev/null
+
+    UNSEAL=$($RUNNER logs vault-server 2>/dev/null | grep 'Unseal Key' | tail -n1 | sed 's/^.*: \(.*\)$/\1/')
+
+   VAULT_ADDR=http://127.0.0.1:8200 vault operator unseal "$UNSEAL"
+
+   %
+}
+
+main "$@"

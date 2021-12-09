@@ -6,7 +6,7 @@ terraform {
     }
     vault = {
       source = "hashicorp/vault"
-      version = "~> 2.24"
+      version = "~> 3.0.1"
     }
   }
 }
@@ -49,13 +49,13 @@ resource "vault_policy" "full_admin" {
 }
 
 resource "okta_app_oauth" "vault" {
-  label                      = "vault"
-  type                       = "web"
-  grant_types                = ["authorization_code"]
+  label = "vault"
+  type = "web"
+  grant_types = ["authorization_code"]
   login_scopes = [
     "email"
   ]
-  redirect_uris              = [
+  redirect_uris = [
     "http://127.0.0.1:8200/ui/vault/auth/jwt/okta/callback",
     "http://127.0.0.1:8250/oidc/callback",
     "http://localhost:8200/ui/vault/auth/jwt/okta/callback",

@@ -3,8 +3,8 @@ version: "3.8"
 services:
 
   vault-server:
-    container_name: vault
-    image: vault:latest
+    container_name: vault-server
+    image: index.docker.io/hashicorp/vault:1.9.0
     ports:
       - "8200:8200"
     environment:
